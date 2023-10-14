@@ -1,0 +1,93 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AnimeFormat {
+  TV
+}
+
+enum Season {
+  WINTER
+  SPRING
+  SUMMER
+  FALL
+  UNKNOWN
+}
+
+model User {
+  id        String   @id @default(cuid())
+  nickname  String   @unique
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Config {
+  id        String   @id @default(cuid())
+  animePage Int      @default(1)
+  seeds     Seed[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Seed {
+  id             String   @id @default(cuid())
+  seed           String   @unique
+  day            Int      @unique
+  characterCount Int
+  animeCount     Int
+  info           Json     @default("[{ \"game\": \"character\", \"tries\": 0, \"success\": 0}, { \"game\": \"anime\", \"tries\": 0, \"success\": 0}, { \"game\": \"characterAnime\", \"tries\": 0, \"success\": 0}]")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  config         Config   @relation(fields: [configId], references: [id])
+  configId       String
+}
+
+model Anime {
+  id              Int         @id @default(autoincrement())
+  apiId           String      @unique
+  title           String      @unique
+  image           String
+  year            Int         @default(-1)
+  genres          String[]
+  studios         String[]
+  sequels         Sequel[]
+  episodes        Int         @default(-1)
+  source          String
+  season          Season      @default(UNKNOWN)
+  duration        Int         @default(-1)
+  countryOfOrigin String      @default("Japan")
+  format          AnimeFormat
+  characters      Character[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model Sequel {
+  id         Int      @id @default(autoincrement())
+  apiId      String   @unique
+  title      String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  Anime      Anime    @relation(fields: [animeApiId], references: [apiId])
+  animeApiId String
+}
+
+model Character {
+  id     Int     @id @default(autoincrement())
+  name   String
+  age    String
+  gender String
+  image  String
+  apiId  String  @unique
+  animes Anime[]
+}
