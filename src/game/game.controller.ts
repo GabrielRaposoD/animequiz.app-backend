@@ -1,4 +1,3 @@
-import { decryptData } from './../lib/encryptData';
 import { Controller, Get, Post, Body } from '@nestjs/common';
 
 import { GameService } from './game.service';
