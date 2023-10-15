@@ -13,16 +13,7 @@ import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { UsersService } from 'src/users/users.service';
 import { Public } from './public';
 import { LoginDto } from './dto/login.dto';
-import {
-  ApiBearerAuth,
-  ApiCreatedResponse,
-  ApiOkResponse,
-  ApiTags,
-} from '@nestjs/swagger';
-import { Login } from './typings/login';
 
-@ApiBearerAuth()
-@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -31,11 +22,6 @@ export class AuthController {
   ) {}
 
   /* Login user */
-
-  @ApiOkResponse({
-    description: 'Logged in.',
-    type: Login,
-  })
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(@Request() req, @Body() body: LoginDto) {
@@ -45,11 +31,6 @@ export class AuthController {
   }
 
   /* Register user */
-
-  @ApiCreatedResponse({
-    description: 'The user has been successfully created.',
-    type: Login,
-  })
   @Public()
   @Post('register')
   async register(@Body() userData: CreateUserDto) {
