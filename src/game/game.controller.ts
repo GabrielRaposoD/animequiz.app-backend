@@ -1,7 +1,8 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Post, Body } from '@nestjs/common';
 
 import { GameService } from './game.service';
 import { encryptData } from '@/lib/encryptData';
+import { SuccessDto } from './dto/success';
 
 @Controller('game')
 export class GameController {
@@ -34,5 +35,12 @@ export class GameController {
     const time = await this.gameService.getTimeUntilNewSeed();
 
     return time;
+  }
+
+  @Post('/success')
+  async success(@Body() body: SuccessDto) {
+    const success = await this.gameService.success(body);
+
+    return success;
   }
 }

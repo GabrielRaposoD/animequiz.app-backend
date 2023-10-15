@@ -1,7 +1,9 @@
-import { Config } from '@prisma/client';
-import { Injectable } from '@nestjs/common';
+import { Config, Prisma } from '@prisma/client';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+
 import Prando from 'prando';
 import { PrismaService } from '@/prisma.service';
+import { SuccessDto } from './dto/success';
 import { differenceInDays } from 'date-fns';
 import { nanoid } from 'nanoid';
 
@@ -123,5 +125,37 @@ export class GameService {
         },
       },
     });
+  }
+
+  async success(body: SuccessDto) {
+    const seed = await this.prisma.seed.findUnique({
+      where: {
+        id: body.seedId,
+      },
+    });
+
+    if (!seed) {
+      throw new HttpException('Seed not found', HttpStatus.NOT_FOUND);
+    }
+
+    const info = seed.info as Prisma.JsonArray;
+
+    info.forEach((i: any) => {
+      if (i['game'] === body.game) {
+        i['success'] = i['success'] + 1;
+        i['tries'] = i['tries'] + body.tries;
+      }
+    });
+
+    await this.prisma.seed.update({
+      where: {
+        id: body.seedId,
+      },
+      data: {
+        info,
+      },
+    });
+
+    return 'success';
   }
 }
