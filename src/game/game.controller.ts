@@ -1,3 +1,4 @@
+import { decryptData } from './../lib/encryptData';
 import { Controller, Get, Post, Body } from '@nestjs/common';
 
 import { GameService } from './game.service';
@@ -12,14 +13,18 @@ export class GameController {
   async getTodaysAnime() {
     const todaysAnime = await this.gameService.getTodaysAnime();
 
-    return encryptData(JSON.stringify(todaysAnime));
+    const encryptedData = await encryptData(JSON.stringify(todaysAnime));
+
+    return encryptedData;
   }
 
   @Get('/character')
   async getTodaysCharacter() {
     const todaysCharacter = await this.gameService.getTodaysCharacter();
 
-    return encryptData(JSON.stringify(todaysCharacter));
+    const encryptedData = await encryptData(JSON.stringify(todaysCharacter));
+
+    return encryptedData;
   }
 
   @Get('/character-anime')
@@ -27,7 +32,11 @@ export class GameController {
     const todaysCharacterAnime =
       await this.gameService.getTodaysCharacterAnime();
 
-    return encryptData(JSON.stringify(todaysCharacterAnime));
+    const encryptedData = await encryptData(
+      JSON.stringify(todaysCharacterAnime),
+    );
+
+    return encryptedData;
   }
 
   @Get('/time')
