@@ -1,9 +1,7 @@
 import { Config } from '@prisma/client';
-import { CreateGameDto } from './dto/create-game.dto';
 import { Injectable } from '@nestjs/common';
 import Prando from 'prando';
 import { PrismaService } from '@/prisma.service';
-import { UpdateGameDto } from './dto/update-game.dto';
 import { differenceInDays } from 'date-fns';
 import { nanoid } from 'nanoid';
 
