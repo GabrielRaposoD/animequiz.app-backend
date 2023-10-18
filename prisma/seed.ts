@@ -44,6 +44,8 @@ const query = `query ($page: Int) {
               format
               source
               seasonYear
+              malId
+              averageScore
               season
               duration
               countryOfOrigin
@@ -164,6 +166,8 @@ async function main() {
                 studios: node.studios.nodes.map((studio: any) => studio.name),
                 relations: relations,
                 duration: node.duration ?? -1,
+                score: node.averageScore ?? -1,
+                malId: node.malId ?? -1,
                 countryOfOrigin: getCountryName(node.countryOfOrigin),
               };
             }
@@ -263,6 +267,8 @@ async function main() {
       genres: anime.genres,
       studios: anime.studios,
       duration: anime.duration,
+      score: anime.score,
+      malId: anime.malId,
       countryOfOrigin: anime.countryOfOrigin,
     })),
     skipDuplicates: true,
@@ -284,8 +290,6 @@ async function main() {
       });
     }),
   );
-
-  console.log('finished inserting sequel data');
 
   const charactersData: Array<
     Prisma.CharacterCreateInput & { animesId: string[] }

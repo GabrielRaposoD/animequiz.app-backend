@@ -1,6 +1,7 @@
 import { Config, Prisma } from '@prisma/client';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 
+import { GetUnlimitedQueryDto } from './dto/get-unlimited-query';
 import Prando from 'prando';
 import { PrismaService } from '@/prisma.service';
 import { SuccessDto } from './dto/success';
@@ -157,5 +158,188 @@ export class GameService {
     });
 
     return 'success';
+  }
+
+  async getRandomCharacterOptions(query: GetUnlimitedQueryDto) {
+    let charactersCount = await this.prisma.character.count({
+      where: {
+        apiId: {
+          notIn: query.blacklist,
+        },
+        animes: {
+          some: {
+            score: {
+              gt: query.minScore,
+            },
+          },
+        },
+      },
+    });
+
+    query.blacklist = query.blacklist || [];
+
+    let random = Math.floor(Math.random() * charactersCount);
+
+    const correctCharacter = await this.prisma.character.findMany({
+      where: {
+        apiId: {
+          notIn: query.blacklist,
+        },
+        animes: {
+          some: {
+            score: {
+              gt: query.minScore,
+            },
+          },
+        },
+      },
+      skip: random,
+      take: 1,
+      select: {
+        apiId: true,
+        name: true,
+        image: true,
+        animes: {
+          orderBy: {
+            year: 'desc',
+          },
+          take: 1,
+        },
+      },
+    });
+
+    query.blacklist.push(correctCharacter[0].apiId);
+    const animeBlacklist = [correctCharacter[0].animes[0].apiId];
+
+    const randomCharacters = await Promise.all(
+      [1, 2, 3].map(async () => {
+        charactersCount = await this.prisma.character.count({
+          where: {
+            apiId: {
+              notIn: query.blacklist,
+            },
+            animes: {
+              some: {
+                score: {
+                  gt: query.minScore,
+                },
+                apiId: {
+                  notIn: animeBlacklist,
+                },
+              },
+            },
+          },
+        });
+
+        random = Math.floor(Math.random() * charactersCount);
+
+        const character = await this.prisma.character.findMany({
+          where: {
+            apiId: {
+              notIn: query.blacklist,
+            },
+            animes: {
+              some: {
+                score: {
+                  gt: query.minScore,
+                },
+                apiId: {
+                  notIn: animeBlacklist,
+                },
+              },
+            },
+          },
+          skip: random,
+          take: 1,
+          select: {
+            apiId: true,
+            name: true,
+            image: true,
+            animes: {
+              orderBy: {
+                year: 'desc',
+              },
+              take: 1,
+            },
+          },
+        });
+
+        query.blacklist.push(character[0].apiId);
+        animeBlacklist.push(character[0].animes[0].apiId);
+
+        return character[0];
+      }),
+    );
+
+    return { correct: correctCharacter[0], random: randomCharacters };
+  }
+
+  async getRandomAnimeOptions(query: GetUnlimitedQueryDto) {
+    let animesCount = await this.prisma.anime.count({
+      where: {
+        apiId: {
+          notIn: query.blacklist,
+        },
+        score: {
+          gt: query.minScore,
+        },
+      },
+    });
+
+    query.blacklist = query.blacklist || [];
+
+    let random = Math.floor(Math.random() * animesCount) - 1;
+
+    const correctAnime = await this.prisma.anime.findMany({
+      where: {
+        apiId: {
+          notIn: query.blacklist,
+        },
+        score: {
+          gt: query.minScore,
+        },
+      },
+      skip: random,
+      take: 1,
+      select: {
+        apiId: true,
+        title: true,
+        image: true,
+      },
+    });
+
+    query.blacklist.push(correctAnime[0].apiId);
+    animesCount = animesCount - 1;
+
+    const randomAnimes = await Promise.all(
+      [1, 2, 3].map(async () => {
+        random = Math.floor(Math.random() * animesCount);
+
+        const anime = await this.prisma.anime.findMany({
+          where: {
+            apiId: {
+              notIn: query.blacklist,
+            },
+            score: {
+              gt: query.minScore,
+            },
+          },
+          skip: random,
+          take: 1,
+          select: {
+            apiId: true,
+            title: true,
+            image: true,
+          },
+        });
+
+        query.blacklist.push(anime[0].apiId);
+        animesCount = animesCount - 1;
+
+        return anime[0];
+      }),
+    );
+
+    return { correct: correctAnime[0], random: randomAnimes };
   }
 }
