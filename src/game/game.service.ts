@@ -161,20 +161,21 @@ export class GameService {
   }
 
   async getRandomCharacterOptions(query: GetUnlimitedQueryDto) {
-    let charactersCount = await this.prisma.character.count({
-      where: {
-        apiId: {
-          notIn: query.blacklist,
-        },
-        animes: {
-          some: {
-            score: {
-              gt: query.minScore,
+    let charactersCount =
+      (await this.prisma.character.count({
+        where: {
+          apiId: {
+            notIn: query.blacklist,
+          },
+          animes: {
+            some: {
+              score: {
+                gt: query.minScore,
+              },
             },
           },
         },
-      },
-    });
+      })) - 1;
 
     query.blacklist = query.blacklist || [];
 
@@ -275,20 +276,21 @@ export class GameService {
   }
 
   async getRandomAnimeOptions(query: GetUnlimitedQueryDto) {
-    let animesCount = await this.prisma.anime.count({
-      where: {
-        apiId: {
-          notIn: query.blacklist,
+    let animesCount =
+      (await this.prisma.anime.count({
+        where: {
+          apiId: {
+            notIn: query.blacklist,
+          },
+          score: {
+            gt: query.minScore,
+          },
         },
-        score: {
-          gt: query.minScore,
-        },
-      },
-    });
+      })) - 1;
 
     query.blacklist = query.blacklist || [];
 
-    let random = Math.floor(Math.random() * animesCount) - 1;
+    let random = Math.floor(Math.random() * animesCount);
 
     const correctAnime = await this.prisma.anime.findMany({
       where: {
