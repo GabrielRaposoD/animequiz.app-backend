@@ -2,7 +2,7 @@ import { Prisma, PrismaClient } from '@prisma/client';
 import { parallel, sleep, try as tryit } from 'radash';
 
 import { assign } from 'radash';
-import { getCountryName } from '@/lib/getCountryName';
+import { getCountryName } from '../src/lib/getCountryName';
 
 const prisma = new PrismaClient();
 
